@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DRIVO">
+<meta name="theme-color" content="#0A0F1E">
+<meta name="description" content="Importa o teu carro da Europa com total transparencia de custos.">
+<title>DRIVO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script>
+// PWA Manifest
+window.addEventListener('load',function(){
+  var m={name:"DRIVO",short_name:"DRIVO",display:"standalone",background_color:"#0A0F1E",theme_color:"#0A0F1E",start_url:"./",orientation:"portrait",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",sizes:"512x512",type:"image/png"}]};
+  var b=new Blob([JSON.stringify(m)],{type:"application/json"});
+  var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(b);document.head.appendChild(l);
+  // Apple touch icon via canvas
+  var c=document.createElement("canvas");c.width=c.height=180;
+  var x=c.getContext("2d");
+  var g=x.createLinearGradient(0,0,180,180);g.addColorStop(0,"#0D1B3E");g.addColorStop(1,"#0A0F1E");
+  x.beginPath();x.roundRect(0,0,180,180,38);x.fillStyle=g;x.fill();
+  x.font="900 108px Arial";x.fillStyle="#3B82F6";x.textAlign="center";x.textBaseline="middle";x.fillText("D",90,94);
+  var ico=document.createElement("link");ico.rel="apple-touch-icon";ico.href=c.toDataURL("image/png");document.head.appendChild(ico);
+});
+<\/script>
+<style>
+:root{
+  --bg:#0A0F1E;--sf:#111827;--sf2:#1A2235;--sf3:#1E2D45;
+  --br:rgba(255,255,255,.06);--br2:rgba(59,130,246,.22);--br3:rgba(34,197,94,.22);
+  --bl:#3B82F6;--bl-d:rgba(59,130,246,.12);
+  --gn:#22C55E;--gn-d:rgba(34,197,94,.10);
+  --or:#F59E0B;--or-d:rgba(245,158,11,.10);
+  --rd:#EF4444;--rd-d:rgba(239,68,68,.10);
+  --t1:#F1F5F9;--t2:#94A3B8;--t3:#475569;
+  --font:"Outfit",sans-serif;--mono:"JetBrains Mono",monospace;
+  --st:env(safe-area-inset-top,44px);--sb:env(safe-area-inset-bottom,20px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:var(--font);color:var(--t1);font-size:15px;line-height:1.5}
+#app{width:100vw;height:100dvh;max-width:430px;margin:0 auto;position:relative;overflow:hidden;background:var(--bg);box-shadow:0 0 80px rgba(0,0,0,.8)}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(22px);transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1);will-change:transform,opacity}
+.scr.on{opacity:1;pointer-events:all;transform:none}
+.scr.out{opacity:0;transform:translateX(-22px);pointer-events:none}
+.sv{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.sv::-webkit-scrollbar{display:none}
+/* Status bar */
+.sb{height:calc(var(--st) + 14px);padding:calc(var(--st)) 22px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:5}
+.sb-t{font-weight:700;font-size:15px;letter-spacing:-.02em}
+.sb-i{display:flex;gap:4px;align-items:center;font-size:11px;opacity:.85}
+/* Bottom Nav */
+.bn{height:calc(58px + var(--sb));padding-bottom:var(--sb);background:rgba(10,15,30,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--br);display:flex;align-items:flex-start;justify-content:space-around;padding-top:8px;flex-shrink:0}
+.nt{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:2px 16px;transition:all .2s}
+.nt svg{width:22px;height:22px;stroke:var(--t3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.nt span{font-size:10px;font-weight:500;color:var(--t3);transition:color .2s}
+.nt.on svg{stroke:var(--bl)}
+.nt.on span{color:var(--bl)}
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;font-family:var(--font);font-weight:600;transition:transform .15s;-webkit-user-select:none;user-select:none;position:relative;overflow:hidden}
+.btn:active{transform:scale(.96)}
+.bp{background:var(--bl);color:#fff;border-radius:16px;padding:16px 22px;font-size:16px;width:100%}
+.bp::after{content:"";position:absolute;top:0;left:0;right:0;height:44%;background:rgba(255,255,255,.09);border-radius:inherit;pointer-events:none}
+.bs{background:var(--sf2);color:var(--t1);border:1px solid var(--br);border-radius:16px;padding:15px 22px;font-size:15px;width:100%}
+.bi{background:var(--sf2);border:1px solid var(--br);border-radius:14px;padding:14px;color:var(--t1);font-size:18px;cursor:pointer;transition:transform .15s}
+.bi:active{transform:scale(.95)}
+/* Card */
+.card{background:var(--sf);border:1px solid var(--br);border-radius:22px;overflow:hidden}
+/* Badge */
+.bdg{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.b-bl{background:var(--bl-d);color:var(--bl);border:1px solid rgba(59,130,246,.2)}
+.b-gn{background:var(--gn-d);color:var(--gn);border:1px solid rgba(34,197,94,.2)}
+.b-or{background:var(--or-d);color:var(--or);border:1px solid rgba(245,158,11,.2)}
+.b-rd{background:var(--rd-d);color:var(--rd);border:1px solid rgba(239,68,68,.2)}
+/* Input */
+.ig{margin-bottom:14px}
+.il{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:block}
+.inp{width:100%;background:var(--sf2);border:1.5px solid var(--br);border-radius:12px;padding:13px 14px;color:var(--t1);font-family:var(--font);font-size:15px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.inp:focus{border-color:var(--bl)}
+.inp::placeholder{color:var(--t3)}
+select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+select.inp option{background:#1A2235}
+.ir{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* Animations */
+@keyframes stIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4)}50%{box-shadow:0 0 0 8px rgba(59,130,246,0)}}
+@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+@keyframes numPop{0%{transform:scale(.9);opacity:.5}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+@keyframes tdot{0%,60%,100%{transform:scale(1);opacity:.4}30%{transform:scale(1.35);opacity:1}}
+.np{animation:numPop .32s cubic-bezier(.16,1,.3,1)}
+.fl{animation:float 4s ease-in-out infinite}
+/* Stagger helper */
+.stg>*{animation:stIn .38s cubic-bezier(.16,1,.3,1) both}
+.stg>:nth-child(1){animation-delay:.04s}
+.stg>:nth-child(2){animation-delay:.09s}
+.stg>:nth-child(3){animation-delay:.14s}
+.stg>:nth-child(4){animation-delay:.19s}
+.stg>:nth-child(5){animation-delay:.23s}
+.stg>:nth-child(6){animation-delay:.27s}
+/* ══ ONBOARDING ══ */
+.ob-vis{flex:1;position:relative;overflow:hidden;background:linear-gradient(145deg,#0D1B3E,#0A0F1E 55%,#091828);display:flex;align-items:center;justify-content:center}
+.ob-g1{position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.17) 0%,transparent 70%);top:-70px;right:-50px;pointer-events:none}
+.ob-g2{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.09) 0%,transparent 70%);bottom:30px;left:-30px;pointer-events:none}
+.ob-card{width:88%;max-width:340px;background:linear-gradient(145deg,rgba(30,58,95,.65),rgba(17,24,39,.9));border:1px solid rgba(59,130,246,.18);border-radius:20px;padding:26px 22px;backdrop-filter:blur(12px);position:relative;z-index:1;animation:stIn .7s cubic-bezier(.16,1,.3,1) both}
+.ob-ic{font-size:50px;margin-bottom:14px;display:block}
+.ob-ct{font-size:21px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.ob-cs{font-size:13px;color:var(--t2);margin-bottom:18px;line-height:1.5}
+.ob-pills{display:flex;gap:7px;flex-wrap:wrap}
+.ob-p{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:6px 10px}
+.ob-pn{font-size:13px;font-weight:700;color:var(--bl)}
+.ob-pl{font-size:9px;color:var(--t2);margin-top:1px;text-transform:uppercase;letter-spacing:.05em}
+.ob-pan{background:var(--bg);border-radius:26px 26px 0 0;padding:26px 22px calc(28px + var(--sb));flex-shrink:0;border-top:1px solid var(--br)}
+.ob-pan>*{animation:stIn .45s cubic-bezier(.16,1,.3,1) both}
+.ob-pan>:nth-child(1){animation-delay:.12s}
+.ob-pan>:nth-child(2){animation-delay:.2s}
+.ob-pan>:nth-child(3){animation-delay:.28s}
+.ob-pan>:nth-child(4){animation-delay:.35s}
+.ob-pan>:nth-child(5){animation-delay:.41s}
+.ob-logo{font-size:32px;font-weight:900;letter-spacing:-.04em;margin-bottom:6px}
+.ob-lv{color:var(--bl)}
+.ob-tag{font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:22px}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
+.ob-dot{width:6px;height:6px;border-radius:3px;background:var(--t3);transition:all .3s}
+.ob-dot.on{width:20px;background:var(--bl)}
+.ob-ln{text-align:center;margin-top:13px;font-size:14px;color:var(--t2);cursor:pointer}
+.ob-ln b{color:var(--bl);font-weight:600}
+/* ══ HOME ══ */
+.hh{padding:calc(var(--st) + 50px) 20px 16px}
+.hg{font-size:13px;color:var(--t2);margin-bottom:3px}
+.ht{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.hc{margin:0 16px 14px;background:linear-gradient(135deg,#1a3a6e,#162033);border:1px solid var(--br2);border-radius:22px;padding:20px 18px;position:relative;overflow:hidden;cursor:pointer}
+.hc::before{content:"";position:absolute;width:180px;height:180px;background:radial-gradient(circle,rgba(59,130,246,.14) 0%,transparent 70%);top:-50px;right:-30px;border-radius:50%;pointer-events:none}
+.hc-lbl{font-size:10px;font-weight:700;color:var(--bl);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+.hc-t{font-size:19px;font-weight:800;letter-spacing:-.025em;line-height:1.25;margin-bottom:14px;position:relative}
+.hc-btn{background:var(--bl);color:#fff;border:none;padding:10px 16px;border-radius:11px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.hc-deco{position:absolute;right:-6px;bottom:-6px;font-size:72px;opacity:.11;pointer-events:none}
+.ao{margin:0 16px 14px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.17);border-radius:16px;padding:12px 15px;display:flex;gap:11px;align-items:flex-start;cursor:pointer;transition:transform .18s}
+.ao:active{transform:scale(.98)}
+.ao-dot{width:8px;height:8px;background:var(--gn);border-radius:50%;flex-shrink:0;margin-top:4px;animation:pdot 2s infinite}
+.ao-t{font-size:13px;line-height:1.5}
+.ao-t b{color:var(--gn)}
+.sh{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:11px}
+.sh-t{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.sh-l{font-size:13px;color:var(--bl);font-weight:500;cursor:pointer}
+.qg{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 16px;margin-bottom:18px}
+.qa{background:var(--sf);border:1px solid var(--br);border-radius:16px;padding:15px 13px;cursor:pointer;transition:transform .18s}
+.qa:active{transform:scale(.96)}
+.qa-ic{font-size:22px;margin-bottom:8px}
+.qa-t{font-size:13px;font-weight:700;letter-spacing:-.01em;margin-bottom:2px}
+.qa-s{font-size:11px;color:var(--t2);line-height:1.4}
+.mc{margin:0 16px 10px;background:var(--sf);border:1px solid var(--br);border-radius:16px;padding:13px 15px;display:flex;gap:13px;align-items:center;cursor:pointer;transition:transform .18s}
+.mc:active{transform:scale(.98)}
+.mc-ic{font-size:36px;flex-shrink:0;filter:drop-shadow(0 3px 10px rgba(0,0,0,.3))}
+.mc-n{font-size:14px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-m{font-size:11px;color:var(--t2);margin-top:2px}
+.mc-pr{text-align:right;flex-shrink:0}
+.mc-pl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em}
+.mc-pv{font-size:18px;font-weight:800;color:var(--bl);letter-spacing:-.02em}
+/* ══ CARS ══ */
+.sw{padding:0 16px 11px}
+.srch{display:flex;align-items:center;gap:9px;background:var(--sf);border:1.5px solid var(--br);border-radius:16px;padding:11px 13px;margin-bottom:9px}
+.srch svg{width:16px;height:16px;stroke:var(--t3);stroke-width:2;flex-shrink:0}
+.srch input{background:none;border:none;outline:none;color:var(--t1);font-family:var(--font);font-size:14px;flex:1}
+.srch input::placeholder{color:var(--t3)}
+.flt{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}
+.flt::-webkit-scrollbar{display:none}
+.fc{flex-shrink:0;padding:7px 12px;background:var(--sf);border:1.5px solid var(--br);border-radius:20px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;white-space:nowrap;transition:all .18s}
+.fc.on{background:var(--bl-d);border-color:rgba(59,130,246,.3);color:var(--bl)}
+.cc{margin:0 16px 11px;background:var(--sf);border:1px solid var(--br);border-radius:22px;overflow:hidden;cursor:pointer;transition:transform .2s}
+.cc:active{transform:scale(.98)}
+.ct{height:174px;position:relative;overflow:hidden;background:linear-gradient(135deg,#111e35,#1a2840);display:flex;align-items:center;justify-content:center}
+.ct-i{font-size:88px;filter:drop-shadow(0 8px 24px rgba(0,0,0,.45))}
+.cf{position:absolute;top:11px;left:11px;font-size:20px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.5))}
+.cs{position:absolute;top:11px;right:11px;background:rgba(10,15,30,.87);backdrop-filter:blur(9px);border-radius:9px;padding:5px 9px;display:flex;align-items:center;gap:3px}
+.cs-n{font-family:var(--mono);font-size:12.5px;font-weight:600}
+.cs-l{font-size:9px;color:var(--t2)}
+.cb{padding:13px 15px 15px}
+.cn{font-size:15.5px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.csp{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:10px}
+.csp span{font-size:11.5px;color:var(--t2)}
+.cpr{display:flex;justify-content:space-between;align-items:flex-end}
+.cpl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.cpv{font-size:21px;font-weight:800;letter-spacing:-.03em}
+/* ══ DETAIL ══ */
+.dh{height:256px;position:relative;overflow:hidden;flex-shrink:0;background:linear-gradient(145deg,#0d1b3e,#1a2840);display:flex;align-items:center;justify-content:center}
+.dh-img{font-size:115px;filter:drop-shadow(0 18px 44px rgba(59,130,246,.16))}
+.dh-bk,.dh-fv{position:absolute;top:calc(var(--st) + 7px);width:37px;height:37px;border-radius:12px;background:rgba(10,15,30,.75);backdrop-filter:blur(10px);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
+.dh-bk{left:15px}
+.dh-fv{right:15px;font-size:18px}
+.dh-sc{position:absolute;bottom:15px;left:15px;background:rgba(34,197,94,.14);backdrop-filter:blur(12px);border:1px solid rgba(34,197,94,.27);border-radius:13px;padding:8px 12px;display:flex;align-items:center;gap:8px}
+.dh-sc-t{font-size:12.5px;font-weight:700;color:var(--gn)}
+.dh-sc-s{font-size:10px;color:var(--t2);margin-top:1px}
+.dh-or{position:absolute;bottom:15px;right:15px;background:rgba(10,15,30,.75);backdrop-filter:blur(10px);border-radius:9px;padding:5px 10px;font-size:11.5px;color:var(--t2)}
+.db{padding:18px 19px 96px}
+.dn{font-size:26px;font-weight:900;letter-spacing:-.04em;margin-bottom:3px}
+.dy{font-size:14px;color:var(--t2);margin-bottom:16px}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.si{background:var(--sf);border:1px solid var(--br);border-radius:12px;padding:11px;text-align:center}
+.si-i{font-size:15px;margin-bottom:3px}
+.si-v{font-size:13px;font-weight:700}
+.si-l{font-size:9.5px;color:var(--t3);margin-top:1px}
+.cb2{background:var(--sf);border:1px solid var(--br);border-radius:20px;padding:17px;margin-bottom:13px}
+.cb2-l{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:13px}
+.cr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--br)}
+.cr:last-of-type{border-bottom:none}
+.cr-l{font-size:13px;color:var(--t2)}
+.cr-v{font-family:var(--mono);font-size:13px;font-weight:600}
+.ct2{display:flex;justify-content:space-between;align-items:center;margin-top:13px;padding-top:13px;border-top:1.5px solid var(--br2)}
+.ct2-l{font-size:14px;font-weight:600}
+.ct2-v{font-size:25px;font-weight:900;color:var(--bl);letter-spacing:-.03em}
+.svb{background:rgba(34,197,94,.07);border:1px solid var(--br3);border-radius:16px;padding:13px 15px;display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.sv-ll div:first-child{font-size:11px;font-weight:600;color:var(--gn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.sv-ll div:last-child{font-size:11px;color:var(--t2)}
+.sv-v{font-size:25px;font-weight:900;color:var(--gn);letter-spacing:-.03em}
+.da{display:flex;gap:9px}
+/* ══ SIMULATOR ══ */
+.sr{margin:0 16px 0;background:linear-gradient(135deg,#1a3a6e,#10203a);border:1px solid var(--br2);border-radius:22px;padding:20px 18px;text-align:center;position:relative;overflow:hidden}
+.sr::before{content:"";position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.11),transparent 70%);top:-45px;right:-25px;pointer-events:none}
+.sr-l{font-size:10px;font-weight:700;color:var(--bl);text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px}
+.sr-v{font-size:42px;font-weight:900;letter-spacing:-.05em;margin-bottom:3px;line-height:1}
+.sr-s{font-size:11.5px;color:var(--t2);line-height:1.5}
+.sf2{padding:14px 16px 0}
+.ic{background:var(--sf);border:1px solid var(--br);border-radius:20px;padding:15px;margin:13px 16px 0}
+.ic-l{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:11px}
+.ir2{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--br)}
+.ir2:last-of-type{border-bottom:none}
+.ir2-l{font-size:12.5px;color:var(--t2)}
+.ir2-v{font-family:var(--mono);font-size:13px;font-weight:600}
+.is{height:1px;background:var(--br2);margin:9px 0}
+.it{display:flex;justify-content:space-between;align-items:center}
+.it-l{font-size:14px;font-weight:600}
+.it-v{font-size:27px;font-weight:900;color:var(--bl);letter-spacing:-.03em}
+.sc2{padding:13px 16px 0;display:flex;flex-direction:column;gap:9px}
+/* ══ TRACKING ══ */
+.th{margin:0 16px 17px;background:linear-gradient(135deg,#0d2b1f,#162033);border:1px solid var(--br3);border-radius:22px;padding:18px}
+.th-t{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:13px}
+.th-cn{font-size:15.5px;font-weight:700;letter-spacing:-.02em}
+.th-cm{font-size:11px;color:var(--t2);margin-top:2px}
+.th-s{background:var(--gn-d);border:1px solid rgba(34,197,94,.25);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:600;color:var(--gn)}
+.th-pl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.th-pb{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.th-pf{height:100%;background:linear-gradient(90deg,var(--gn),#16a34a);border-radius:3px;width:43%;transition:width 1s}
+.th-et{font-size:11px;color:var(--t3)}
+.tl-h{font-size:15px;font-weight:700;letter-spacing:-.01em;padding:0 20px;margin-bottom:14px}
+.tl{padding:0 20px}
+.ti{display:flex;gap:15px;padding-bottom:20px;position:relative}
+.ti:not(:last-child)::after{content:"";position:absolute;left:17px;top:38px;bottom:0;width:2px;background:var(--br)}
+.ti.td::after{background:rgba(34,197,94,.33)}
+.td2{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid var(--br);background:var(--sf);position:relative;z-index:1}
+.ti.td .td2{background:var(--gn-d);border-color:var(--gn)}
+.ti.ta .td2{background:var(--bl-d);border-color:var(--bl);animation:pulse 2s infinite}
+.tb{flex:1;padding-top:6px}
+.tn{font-size:13.5px;font-weight:600;letter-spacing:-.01em;margin-bottom:2px}
+.ti.td .tn{color:var(--gn)}
+.ti.ta .tn{color:var(--bl)}
+.tdl{font-size:11px;color:var(--t3)}
+.tdoc{display:inline-flex;align-items:center;gap:4px;background:var(--sf2);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--t2);margin-top:4px;cursor:pointer}
+/* ══ CHAT ══ */
+.ch-h{padding:calc(var(--st) + 7px) 19px 13px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--br);flex-shrink:0;background:rgba(10,15,30,.97);backdrop-filter:blur(20px)}
+.ch-av{width:41px;height:41px;border-radius:50%;background:var(--bl-d);border:1.5px solid rgba(59,130,246,.28);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.ch-nm{font-size:15.5px;font-weight:700;letter-spacing:-.02em}
+.ch-on{font-size:11px;color:var(--gn);display:flex;align-items:center;gap:3px;margin-top:1px}
+.ch-on::before{content:"";width:5px;height:5px;background:var(--gn);border-radius:50%;display:inline-block}
+.cm{flex:1;overflow-y:auto;padding:14px 17px;display:flex;flex-direction:column;gap:11px}
+.cm::-webkit-scrollbar{display:none}
+.msg{max-width:83%;animation:stIn .28s cubic-bezier(.16,1,.3,1)}
+.msg.bot{align-self:flex-start}
+.msg.usr{align-self:flex-end}
+.mb{padding:11px 14px;border-radius:17px;font-size:14px;line-height:1.55}
+.msg.bot .mb{background:var(--sf);border:1px solid var(--br);border-bottom-left-radius:4px}
+.msg.usr .mb{background:var(--bl);color:#fff;border-bottom-right-radius:4px}
+.mt{font-size:10px;color:var(--t3);margin-top:3px}
+.msg.usr .mt{text-align:right}
+.qrs{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px}
+.qr{background:var(--bl-d);border:1px solid rgba(59,130,246,.22);color:var(--bl);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;transition:all .16s;font-family:var(--font)}
+.qr:active{background:var(--bl);color:#fff}
+.typ{display:flex;gap:4px;align-items:center;padding:11px 15px}
+.typ span{width:6px;height:6px;border-radius:50%;background:var(--t3);animation:tdot 1.2s infinite}
+.typ span:nth-child(2){animation-delay:.2s}
+.typ span:nth-child(3){animation-delay:.4s}
+.ci{padding:9px 15px calc(12px + var(--sb));background:var(--bg);border-top:1px solid var(--br);flex-shrink:0}
+.cr2{display:flex;gap:8px;align-items:center;background:var(--sf);border:1.5px solid var(--br);border-radius:25px;padding:8px 8px 8px 15px}
+.cr2 input{flex:1;background:none;border:none;outline:none;color:var(--t1);font-family:var(--font);font-size:14px}
+.cr2 input::placeholder{color:var(--t3)}
+.cs2{width:35px;height:35px;background:var(--bl);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;border:none}
+.cs2 svg{width:15px;height:15px;stroke:#fff;stroke-width:2.5;fill:none}
+/* ══ PROFILE ══ */
+.pc{margin:0 16px 17px;background:linear-gradient(135deg,var(--sf2),var(--sf));border:1px solid var(--br);border-radius:22px;padding:20px 18px;text-align:center}
+.pa{width:68px;height:68px;border-radius:50%;margin:0 auto 11px;background:var(--bl-d);border:2px solid rgba(59,130,246,.33);display:flex;align-items:center;justify-content:center;font-size:28px}
+.pn{font-size:19px;font-weight:800;letter-spacing:-.03em;margin-bottom:3px}
+.pe{font-size:13px;color:var(--t2);margin-bottom:15px}
+.ps{display:grid;grid-template-columns:repeat(3,1fr);border-radius:13px;overflow:hidden;background:var(--br)}
+.pss{background:var(--sf2);padding:11px 7px;text-align:center}
+.pss-v{font-size:21px;font-weight:800;color:var(--bl);letter-spacing:-.03em}
+.pss-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+.ms{padding:0 19px;margin-bottom:18px}
+.ms-l{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}
+.mi{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--br);cursor:pointer;transition:opacity .15s}
+.mi:last-child{border-bottom:none}
+.mi:active{opacity:.65}
+.mi-i{width:35px;height:35px;border-radius:10px;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.mi-t{flex:1;font-size:14px;font-weight:500}
+.mi-a{font-size:13px;color:var(--t3)}
+/* ══ INSTALL BANNER ══ */
+#ib{display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:9999;background:linear-gradient(135deg,#1a3a6e,#111827);border-top:1px solid rgba(59,130,246,.3);padding:15px 19px calc(14px + var(--sb));font-family:var(--font)}
+.ib-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.ib-ic{width:42px;height:42px;background:var(--bg);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:21px;border:1px solid rgba(59,130,246,.28);flex-shrink:0}
+.ib-tx{font-size:14px;font-weight:700;color:var(--t1)}
+.ib-sub{font-size:11px;color:var(--t2);margin-top:1px}
+.ib-x{font-size:19px;color:var(--t3);cursor:pointer;padding:2px 5px;line-height:1}
+.ib-steps{background:rgba(255,255,255,.05);border-radius:12px;padding:11px 13px;margin-bottom:9px}
+.ib-step{font-size:12px;color:var(--t2);line-height:1.85}
+.ib-step b{color:var(--bl)}
+.ib-note{text-align:center;font-size:11px;color:var(--t3)}
+.pb{padding-bottom:20px}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- ═══ ONBOARDING ═══ -->
+<div class="scr on" id="s-ob">
+  <div class="ob-vis">
+    <div class="ob-g1"></div><div class="ob-g2"></div>
+    <div class="ob-card">
+      <span class="ob-ic fl">🚗</span>
+      <div class="ob-ct">Importa com confiança</div>
+      <div class="ob-cs">Custos reais. Processo claro. Sem surpresas nem letras miúdas.</div>
+      <div class="ob-pills">
+        <div class="ob-p"><div class="ob-pn">+2.400</div><div class="ob-pl">Carros EU</div></div>
+        <div class="ob-p"><div class="ob-pn">DE · FR · NL</div><div class="ob-pl">Países</div></div>
+        <div class="ob-p"><div class="ob-pn">100%</div><div class="ob-pl">Transparente</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ob-pan">
+    <div class="ob-logo">DRI<span class="ob-lv">V</span>O</div>
+    <div class="ob-tag">A plataforma que transforma a importação de carros europeus num processo simples, transparente e sem stress.</div>
+    <div class="ob-dots"><div class="ob-dot on"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+    <button class="btn bp" onclick="go('s-home')">Começar agora →</button>
+    <div class="ob-ln">Já tens conta? <b onclick="go('s-home')">Entrar</b></div>
+  </div>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div class="scr" id="s-home">
+  <div class="sb" style="position:absolute;top:0;left:0;right:0;z-index:10;background:transparent">
+    <span class="sb-t">9:41</span><div class="sb-i"><span>●●●</span><span> WiFi </span><span>🔋</span></div>
+  </div>
+  <div class="sv" style="padding-top:0">
+    <div class="hh"><div class="hg">Olá, Bruno 👋</div><div class="ht">O que queres fazer?</div></div>
+    <div class="hc stg" onclick="go('s-sim')">
+      <div class="hc-lbl">⚡ Destaque</div>
+      <div class="hc-t">Calcula o custo real do teu próximo carro em Portugal</div>
+      <button class="hc-btn" onclick="event.stopPropagation();go('s-sim')">Simular agora →</button>
+      <div class="hc-deco">🚗</div>
+    </div>
+    <div class="ao stg" onclick="go('s-cars')">
+      <div class="ao-dot"></div>
+      <div class="ao-t"><b>BMW 320d 2021</b> — €4.200 abaixo do preço médio de mercado na Alemanha. Score 94/100. 🔥</div>
+    </div>
+    <div class="sh"><div class="sh-t">Ações rápidas</div></div>
+    <div class="qg stg">
+      <div class="qa" onclick="go('s-cars')"><div class="qa-ic">🔍</div><div class="qa-t">Procurar</div><div class="qa-s">+2.400 carros EU</div></div>
+      <div class="qa" onclick="go('s-sim')"><div class="qa-ic">🧮</div><div class="qa-t">Simular ISV</div><div class="qa-s">Custo real em PT</div></div>
+      <div class="qa" onclick="go('s-track')"><div class="qa-ic">📦</div><div class="qa-t">Tracking</div><div class="qa-s">1 importação ativa</div></div>
+      <div class="qa" onclick="go('s-chat')"><div class="qa-ic">🤖</div><div class="qa-t">Assistente</div><div class="qa-s">Pergunta tudo</div></div>
+    </div>
+    <div class="sh"><div class="sh-t">Destaques</div><div class="sh-l" onclick="go('s-cars')">Ver todos</div></div>
+    <div class="mc stg" onclick="go('s-detail')">
+      <div class="mc-ic">🚗</div>
+      <div style="flex:1;min-width:0"><div class="mc-n">BMW 320d xDrive</div><div class="mc-m">🇩🇪 Alemanha · 2021 · 62k km</div><div style="margin-top:5px"><span class="bdg b-gn">🔥 Excelente</span></div></div>
+      <div class="mc-pr"><div class="mc-pl">Total PT</div><div class="mc-pv">34.100€</div></div>
+    </div>
+    <div class="mc stg" onclick="go('s-detail')" style="margin-bottom:18px">
+      <div class="mc-ic">⚡</div>
+      <div style="flex:1;min-width:0"><div class="mc-n">Tesla Model 3 LR</div><div class="mc-m">🇳🇱 Holanda · 2022 · 38k km</div><div style="margin-top:5px"><span class="bdg b-gn">💚 ISV Isento</span></div></div>
+      <div class="mc-pr"><div class="mc-pl">Total PT</div><div class="mc-pv" style="color:var(--gn)">34.800€</div></div>
+    </div>
+    <div class="pb"></div>
+  </div>
+  <div class="bn">
+    <div class="nt on" onclick="go('s-home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Início</span></div>
+    <div class="nt" onclick="go('s-cars')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Carros</span></div>
+    <div class="nt" onclick="go('s-sim')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Simular</span></div>
+    <div class="nt" onclick="go('s-track')"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Tracking</span></div>
+    <div class="nt" onclick="go('s-profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Perfil</span></div>
+  </div>
+</div>
+
+<!-- ═══ CARS ═══ -->
+<div class="scr" id="s-cars">
+  <div class="sb" style="background:var(--bg)"><span class="sb-t">9:41</span><div class="sb-i"><span>●●●</span><span> WiFi </span><span>🔋</span></div></div>
+  <div style="padding:4px 20px 14px;flex-shrink:0"><div style="font-size:25px;font-weight:800;letter-spacing:-.03em">Carros</div><div style="font-size:13px;color:var(--t2)">2.847 resultados</div></div>
+  <div class="sv stg">
+    <div class="sw">
+      <div class="srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Marca, modelo ou país..."></div>
+      <div class="flt">
+        <div class="fc on">Todos</div>
+        <div class="fc" onclick="flt(this)">🇩🇪 Alemanha</div>
+        <div class="fc" onclick="flt(this)">🇳🇱 Holanda</div>
+        <div class="fc" onclick="flt(this)">🇫🇷 França</div>
+        <div class="fc" onclick="flt(this)">⚡ Elétrico</div>
+        <div class="fc" onclick="flt(this)">SUV</div>
+        <div class="fc" onclick="flt(this)">Diesel</div>
+      </div>
+    </div>
+    <div class="cc" onclick="go('s-detail')">
+      <div class="ct"><div class="ct-i">🚗</div><div class="cf">🇩🇪</div><div class="cs"><span class="cs-n" style="color:var(--gn)">94</span><span class="cs-l">score</span></div></div>
+      <div class="cb"><div class="cn">BMW 320d xDrive</div><div class="csp"><span>📅 2021</span><span>💨 150g CO₂</span><span>🛣️ 62k km</span><span>⛽ Diesel</span></div><div style="margin-bottom:10px"><span class="bdg b-gn">🔥 Excelente negócio</span></div><div class="cpr"><div><div class="cpl">Preço origem</div><div class="cpv">28.500€</div></div><div style="text-align:right"><div class="cpl">Total PT</div><div class="cpv" style="color:var(--bl)">34.100€</div></div></div></div>
+    </div>
+    <div class="cc" onclick="go('s-detail')">
+      <div class="ct" style="background:linear-gradient(135deg,#0d1f0d,#1a2840)"><div class="ct-i">⚡</div><div class="cf">🇳🇱</div><div class="cs"><span class="cs-n" style="color:var(--gn)">88</span><span class="cs-l">score</span></div></div>
+      <div class="cb"><div class="cn">Tesla Model 3 Long Range</div><div class="csp"><span>📅 2022</span><span>⚡ Elétrico</span><span>🛣️ 38k km</span><span>🔋 ISV: 0€</span></div><div style="margin-bottom:10px"><span class="bdg b-gn">💚 ISV Isento</span></div><div class="cpr"><div><div class="cpl">Preço origem</div><div class="cpv">32.000€</div></div><div style="text-align:right"><div class="cpl">Total PT</div><div class="cpv" style="color:var(--gn)">34.800€</div></div></div></div>
+    </div>
+    <div class="cc" onclick="go('s-detail')">
+      <div class="ct" style="background:linear-gradient(135deg,#1f1a0d,#1a2840)"><div class="ct-i">🏎️</div><div class="cf">🇫🇷</div><div class="cs"><span class="cs-n" style="color:var(--or)">71</span><span class="cs-l">score</span></div></div>
+      <div class="cb"><div class="cn">Audi A4 Avant 2.0 TFSI</div><div class="csp"><span>📅 2020</span><span>💨 162g CO₂</span><span>🛣️ 85k km</span><span>⛽ Gasolina</span></div><div style="margin-bottom:10px"><span class="bdg b-or">⚠️ CO₂ elevado</span></div><div class="cpr"><div><div class="cpl">Preço origem</div><div class="cpv">21.000€</div></div><div style="text-align:right"><div class="cpl">Total PT</div><div class="cpv" style="color:var(--or)">29.400€</div></div></div></div>
+    </div>
+    <div class="cc" onclick="go('s-detail')" style="margin-bottom:20px">
+      <div class="ct" style="background:linear-gradient(135deg,#1a1535,#1a2840)"><div class="ct-i">🚙</div><div class="cf">🇩🇪</div><div class="cs"><span class="cs-n" style="color:var(--bl)">82</span><span class="cs-l">score</span></div></div>
+      <div class="cb"><div class="cn">Mercedes C220d AMG Line</div><div class="csp"><span>📅 2022</span><span>💨 139g CO₂</span><span>🛣️ 44k km</span><span>⛽ Diesel</span></div><div style="margin-bottom:10px"><span class="bdg b-bl">👍 Bom negócio</span></div><div class="cpr"><div><div class="cpl">Preço origem</div><div class="cpv">36.500€</div></div><div style="text-align:right"><div class="cpl">Total PT</div><div class="cpv" style="color:var(--bl)">42.800€</div></div></div></div>
+    </div>
+    <div class="pb"></div>
+  </div>
+  <div class="bn">
+    <div class="nt" onclick="go('s-home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Início</span></div>
+    <div class="nt on" onclick="go('s-cars')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Carros</span></div>
+    <div class="nt" onclick="go('s-sim')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Simular</span></div>
+    <div class="nt" onclick="go('s-track')"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Tracking</span></div>
+    <div class="nt" onclick="go('s-profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Perfil</span></div>
+  </div>
+</div>
+
+<!-- ═══ DETAIL ═══ -->
+<div class="scr" id="s-detail">
+  <div class="dh"><div class="dh-img fl">🚗</div><div class="dh-bk" onclick="go('s-cars')">←</div><div class="dh-fv" id="fvb" onclick="tfav()">♡</div><div class="dh-sc"><div style="font-size:17px">🔥</div><div><div class="dh-sc-t">Excelente negócio</div><div class="dh-sc-s">Score 94/100</div></div></div><div class="dh-or">🇩🇪 Munich, Alemanha</div></div>
+  <div class="sv">
+    <div class="db">
+      <div class="dn">BMW 320d xDrive</div>
+      <div class="dy">2021 · Série 3 · Diesel · 190cv · Automático</div>
+      <div class="sg"><div class="si"><div class="si-i">🛣️</div><div class="si-v">62.400</div><div class="si-l">Km</div></div><div class="si"><div class="si-i">💨</div><div class="si-v">150g</div><div class="si-l">CO₂/km</div></div><div class="si"><div class="si-i">⚙️</div><div class="si-v">1.997cc</div><div class="si-l">Motor</div></div></div>
+      <div class="cb2"><div class="cb2-l">Breakdown de custos</div><div class="cr"><span class="cr-l">Preço em origem</span><span class="cr-v">28.500 €</span></div><div class="cr"><span class="cr-l">ISV estimado</span><span class="cr-v" style="color:var(--or)">3.240 €</span></div><div class="cr"><span class="cr-l">Transporte DE → PT</span><span class="cr-v">1.100 €</span></div><div class="cr"><span class="cr-l">Inspeção + Matrícula</span><span class="cr-v">535 €</span></div><div class="cr"><span class="cr-l">Serviço DRIVO</span><span class="cr-v">750 €</span></div><div class="ct2"><span class="ct2-l">Total em Portugal</span><span class="ct2-v">34.125 €</span></div></div>
+      <div class="svb"><div class="sv-ll"><div>💰 Poupança estimada</div><div>vs. stand em Portugal (~42.300€)</div></div><div class="sv-v">+8.175€</div></div>
+      <div class="da"><button class="btn bi" onclick="go('s-chat')">💬</button><button class="btn bp" onclick="go('s-track')">Quero importar →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SIMULATOR ═══ -->
+<div class="scr" id="s-sim">
+  <div class="sb" style="background:var(--bg)"><span class="sb-t">9:41</span><div class="sb-i"><span>●●●</span><span> WiFi </span><span>🔋</span></div></div>
+  <div style="padding:4px 20px 14px;flex-shrink:0"><div style="font-size:25px;font-weight:800;letter-spacing:-.03em">Simulador ISV</div><div style="font-size:13px;color:var(--t2)">Custo real em Portugal</div></div>
+  <div class="sv">
+    <div class="sr"><div class="sr-l">Custo Total em Portugal</div><div class="sr-v" id="sv">30.125 €</div><div class="sr-s" id="ss">ISV ~2.640€ · Transp ~250€ · Proc ~535€ · Serviço ~750€</div></div>
+    <div class="sf2">
+      <div class="ir"><div class="ig" style="margin-bottom:0"><label class="il">Combustível</label><select class="inp" id="st" onchange="tc();sc()"><option value="d">⛽ Diesel</option><option value="g">⛽ Gasolina</option><option value="p">🔋 Híbrido PHEV</option><option value="e">⚡ Elétrico BEV</option></select></div><div class="ig" style="margin-bottom:0"><label class="il">País</label><select class="inp" id="sp" onchange="sc()"><option value="de">🇩🇪 Alemanha</option><option value="fr">🇫🇷 França</option><option value="nl">🇳🇱 Holanda</option></select></div></div>
+      <div class="ig" style="margin-top:14px"><label class="il">Preço de compra (€)</label><input class="inp" type="number" id="spr" value="25000" oninput="sc()"></div>
+      <div class="ir" id="mr"><div class="ig" style="margin-bottom:0"><label class="il">Cilindrada (cc)</label><input class="inp" type="number" id="sc2" value="1997" oninput="sc()"></div><div class="ig" style="margin-bottom:0"><label class="il">CO₂ (g/km)</label><input class="inp" type="number" id="sco" value="150" oninput="sc()"></div></div>
+      <div class="ir" style="margin-top:14px"><div class="ig" style="margin-bottom:0"><label class="il">Ano</label><input class="inp" type="number" id="sa" value="2021" oninput="sc()"></div><div class="ig" style="margin-bottom:0"><label class="il">Transporte</label><select class="inp" id="str" onchange="sc()"><option value="i">Vou buscar</option><option value="t">Transportadora</option></select></div></div>
+    </div>
+    <div class="ic stg"><div class="ic-l">Breakdown detalhado</div><div class="ir2"><span class="ir2-l">Preço do veículo</span><span class="ir2-v" id="bv">25.000 €</span></div><div class="ir2"><span class="ir2-l">ISV estimado</span><span class="ir2-v" id="bi" style="color:var(--or)">2.640 €</span></div><div class="ir2"><span class="ir2-l">Transporte</span><span class="ir2-v" id="bt">250 €</span></div><div class="ir2"><span class="ir2-l">Inspeção + Matrícula</span><span class="ir2-v">535 €</span></div><div class="ir2" style="border-bottom:none"><span class="ir2-l">Serviço DRIVO</span><span class="ir2-v">750 €</span></div><div class="is"></div><div class="it"><span class="it-l">Total em Portugal</span><span class="it-v" id="bt2">30.125 €</span></div></div>
+    <div class="sc2"><button class="btn bp" onclick="go('s-detail')">Importar este carro →</button><button class="btn bs" onclick="go('s-chat')">🤖 Perguntar ao assistente</button></div>
+    <div class="pb" style="height:26px"></div>
+  </div>
+  <div class="bn">
+    <div class="nt" onclick="go('s-home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Início</span></div>
+    <div class="nt" onclick="go('s-cars')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Carros</span></div>
+    <div class="nt on" onclick="go('s-sim')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Simular</span></div>
+    <div class="nt" onclick="go('s-track')"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Tracking</span></div>
+    <div class="nt" onclick="go('s-profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Perfil</span></div>
+  </div>
+</div>
+
+<!-- ═══ TRACKING ═══ -->
+<div class="scr" id="s-track">
+  <div class="sb" style="background:var(--bg)"><span class="sb-t">9:41</span><div class="sb-i"><span>●●●</span><span> WiFi </span><span>🔋</span></div></div>
+  <div style="padding:4px 20px 14px;flex-shrink:0"><div style="font-size:25px;font-weight:800;letter-spacing:-.03em">Acompanhamento</div><div style="font-size:13px;color:var(--t2)">1 importação ativa</div></div>
+  <div class="sv">
+    <div class="th stg"><div class="th-t"><div><div class="th-cn">BMW 320d xDrive</div><div class="th-cm">🇩🇪 Munich → 🇵🇹 Braga</div></div><div class="th-s">Em trânsito</div></div><div class="th-pl">Progresso — Passo 3 de 7</div><div class="th-pb"><div class="th-pf"></div></div><div class="th-et">⏱ Estimativa de chegada: 19–21 Mar 2025</div></div>
+    <div class="tl-h">Fases do processo</div>
+    <div class="tl stg">
+      <div class="ti td"><div class="td2">✅</div><div class="tb"><div class="tn">Compra confirmada</div><div class="tdl">12 Mar · Concluído</div><div class="tdoc">📄 Contrato de compra</div></div></div>
+      <div class="ti td"><div class="td2">✅</div><div class="tb"><div class="tn">Inspeção e CoC verificados</div><div class="tdl">13 Mar · Concluído</div><div class="tdoc">📄 Cert. de Conformidade</div></div></div>
+      <div class="ti ta"><div class="td2">🚛</div><div class="tb"><div class="tn">Transporte em curso</div><div class="tdl">Em trânsito · Tracking ativo</div><div class="tdoc">📍 Ver localização</div></div></div>
+      <div class="ti"><div class="td2">🇵🇹</div><div class="tb"><div class="tn">Chegada a Portugal</div><div class="tdl">Previsto: 19–21 Mar 2025</div></div></div>
+      <div class="ti"><div class="td2">🔍</div><div class="tb"><div class="tn">Inspeção técnica PT</div><div class="tdl">A agendar após chegada</div></div></div>
+      <div class="ti"><div class="td2">🏛️</div><div class="tb"><div class="tn">Legalização — ISV + IMT</div><div class="tdl">Previsto: 22–26 Mar 2025</div></div></div>
+      <div class="ti" style="padding-bottom:30px"><div class="td2">🎉</div><div class="tb"><div class="tn">Matrícula portuguesa</div><div class="tdl">Previsto: ~28 Mar 2025</div></div></div>
+    </div>
+    <div class="pb"></div>
+  </div>
+  <div class="bn">
+    <div class="nt" onclick="go('s-home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Início</span></div>
+    <div class="nt" onclick="go('s-cars')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Carros</span></div>
+    <div class="nt" onclick="go('s-sim')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Simular</span></div>
+    <div class="nt on" onclick="go('s-track')"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Tracking</span></div>
+    <div class="nt" onclick="go('s-profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Perfil</span></div>
+  </div>
+</div>
+
+<!-- ═══ CHAT ═══ -->
+<div class="scr" id="s-chat">
+  <div class="ch-h"><div class="ch-av">🤖</div><div><div class="ch-nm">DRIVO Assistant</div><div class="ch-on">Online agora</div></div></div>
+  <div class="cm" id="cm">
+    <div class="msg bot"><div class="mb">Olá Bruno 👋 Sou o assistente DRIVO. Ajudo com custos, documentação e a encontrar o melhor negócio. O que precisas?</div><div class="mt">9:41</div><div class="qrs"><div class="qr" onclick="sqr(this)">Quanto fica de ISV?</div><div class="qr" onclick="sqr(this)">Que documentos preciso?</div><div class="qr" onclick="sqr(this)">BMW 320d compensa?</div><div class="qr" onclick="sqr(this)">Elétrico vs Diesel?</div></div></div>
+  </div>
+  <div class="ci"><div class="cr2"><input id="ci2" placeholder="Pergunta o que quiseres..." onkeydown="if(event.key==='Enter')sm()"><div class="cs2" onclick="sm()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div></div></div>
+</div>
+
+<!-- ═══ PROFILE ═══ -->
+<div class="scr" id="s-profile">
+  <div class="sb" style="background:var(--bg)"><span class="sb-t">9:41</span><div class="sb-i"><span>●●●</span><span> WiFi </span><span>🔋</span></div></div>
+  <div style="padding:4px 20px 14px;flex-shrink:0"><div style="font-size:25px;font-weight:800;letter-spacing:-.03em">Perfil</div></div>
+  <div class="sv">
+    <div class="pc stg"><div class="pa">👤</div><div class="pn">Bruno Silva</div><div class="pe">bruno@empresa.pt · Braga, PT</div><div class="ps"><div class="pss"><div class="pss-v">1</div><div class="pss-l">Ativa</div></div><div class="pss"><div class="pss-v">4</div><div class="pss-l">Simul.</div></div><div class="pss"><div class="pss-v">2</div><div class="pss-l">Saved</div></div></div></div>
+    <div class="ms stg">
+      <div class="ms-l">Importações</div>
+      <div class="mi" onclick="go('s-track')"><div class="mi-i">📦</div><div class="mi-t">Importação ativa</div><span class="bdg b-gn" style="font-size:10px;margin-right:6px">1 ativa</span><div class="mi-a">›</div></div>
+      <div class="mi"><div class="mi-i">📋</div><div class="mi-t">Histórico</div><div class="mi-a">›</div></div>
+      <div class="mi" onclick="go('s-cars')"><div class="mi-i">❤️</div><div class="mi-t">Carros guardados</div><span class="bdg b-bl" style="font-size:10px;margin-right:6px">2</span><div class="mi-a">›</div></div>
+    </div>
+    <div class="ms stg">
+      <div class="ms-l">Conta</div>
+      <div class="mi"><div class="mi-i">🔔</div><div class="mi-t">Notificações</div><div class="mi-a">›</div></div>
+      <div class="mi"><div class="mi-i">🔒</div><div class="mi-t">Segurança</div><div class="mi-a">›</div></div>
+      <div class="mi"><div class="mi-i">💳</div><div class="mi-t">Faturação</div><div class="mi-a">›</div></div>
+      <div class="mi"><div class="mi-i">❓</div><div class="mi-t">Ajuda</div><div class="mi-a">›</div></div>
+    </div>
+    <div style="padding:0 16px 10px"><button class="btn bs" style="color:var(--rd);border-color:rgba(239,68,68,.22)">Terminar sessão</button></div>
+    <div class="pb"></div>
+  </div>
+  <div class="bn">
+    <div class="nt" onclick="go('s-home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Início</span></div>
+    <div class="nt" onclick="go('s-cars')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Carros</span></div>
+    <div class="nt" onclick="go('s-sim')"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Simular</span></div>
+    <div class="nt" onclick="go('s-track')"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Tracking</span></div>
+    <div class="nt on" onclick="go('s-profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Perfil</span></div>
+  </div>
+</div>
+
+<!-- ═══ INSTALL BANNER ═══ -->
+<div id="ib">
+  <div class="ib-h"><div style="display:flex;gap:11px;align-items:center"><div class="ib-ic">🚗</div><div><div class="ib-tx">Instalar DRIVO</div><div class="ib-sub">Adicionar ao ecrã inicial</div></div></div><div class="ib-x" onclick="document.getElementById('ib').style.display='none'">✕</div></div>
+  <div class="ib-steps"><div class="ib-step">1️⃣ Toca em <b>Partilhar ⎋</b> no Safari</div><div class="ib-step">2️⃣ Escolhe <b>"Adicionar ao Ecrã Inicial"</b></div><div class="ib-step">3️⃣ Toca em <b>Adicionar</b> — feito ✅</div></div>
+  <div class="ib-note">Funciona offline · Sem App Store · Ícone no ecrã inicial</div>
+</div>
+
+</div><!-- #app --><script>
+// ── NAVIGATION
+var cur='s-ob';
+function go(id){
+  if(id===cur)return;
+  var f=document.getElementById(cur),t=document.getElementById(id);
+  if(!t)return;
+  f.classList.remove('on');f.classList.add('out');
+  setTimeout(function(){f.classList.remove('out')},340);
+  t.classList.add('on');
+  cur=id;
+  // re-trigger stagger
+  t.querySelectorAll('.stg').forEach(function(el){
+    Array.from(el.children).forEach(function(c){
+      c.style.animation='none';void c.offsetHeight;c.style.animation='';
+    });
+  });
+}
+// ── FILTER CHIPS
+function flt(el){
+  document.querySelectorAll('.fc').forEach(function(c){c.classList.remove('on')});
+  el.classList.add('on');
+}
+// ── FAVORITE
+function tfav(){
+  var b=document.getElementById('fvb');
+  b.textContent=b.textContent==='♡'?'❤️':'♡';
+}
+// ── ISV CALC
+function ci(t,c,o,a){
+  if(t==='e')return 0;
+  var r=Math.min(.52,Math.max(0,2025-a)*.04);
+  var cC=0;
+  if(c<=1000)cC=c*.01;
+  else if(c<=1250)cC=10+(c-1000)*.03;
+  else if(c<=1750)cC=17.5+(c-1250)*.05;
+  else if(c<=2500)cC=42.5+(c-1750)*.08;
+  else cC=102.5+(c-2500)*.12;
+  var cO=0;
+  if(o>175)cO=6800+(o-175)*300;
+  else if(o>155)cO=3800+(o-155)*150;
+  else if(o>115)cO=600+(o-115)*80;
+  else if(o>95)cO=(o-95)*30;
+  if(t==='p')cO*=.5;
+  return Math.round((cC+cO)*(1-r));
+}
+function fmt(n){return n.toLocaleString('pt-PT')+' €'}
+function tc(){
+  var t=document.getElementById('st').value;
+  var mr=document.getElementById('mr');
+  mr.style.opacity=t==='e'?'.3':'1';
+  mr.style.pointerEvents=t==='e'?'none':'auto';
+}
+function sc(){
+  var t=document.getElementById('st').value;
+  var pr=parseFloat(document.getElementById('spr').value)||0;
+  var c=parseFloat(document.getElementById('sc2').value)||0;
+  var o=parseFloat(document.getElementById('sco').value)||0;
+  var a=parseInt(document.getElementById('sa').value)||2021;
+  var p=document.getElementById('sp').value;
+  var tr=document.getElementById('str').value;
+  var isv=ci(t,c,o,a);
+  var tm={de:{i:250,t:1100},fr:{i:200,t:700},nl:{i:280,t:1200}};
+  var tp=tm[p][tr.charAt(0)];
+  var total=pr+isv+tp+535+750;
+  // animate
+  var el=document.getElementById('sv');
+  el.classList.remove('np');void el.offsetHeight;el.classList.add('np');
+  el.textContent=fmt(total);
+  document.getElementById('bt2').textContent=fmt(total);
+  document.getElementById('bv').textContent=fmt(pr);
+  var bi=document.getElementById('bi');
+  bi.textContent=t==='e'?'0 € — ISENTO ✓':fmt(isv);
+  bi.style.color=t==='e'?'var(--gn)':isv>4000?'var(--rd)':'var(--or)';
+  document.getElementById('bt').textContent=fmt(tp);
+  document.getElementById('ss').textContent=t==='e'?'ISV isento ✓ · Transp ~'+tp+'€ · Serviço ~750€':'ISV ~'+isv.toLocaleString('pt-PT')+'€ · Transp ~'+tp+'€ · Serviço ~750€';
+}
+// ── CHAT
+var rsp={
+  'Quanto fica de ISV?':'O ISV depende da cilindrada, CO₂ e ano do veículo.\n\nPara um diesel 2.0L com 150g CO₂ de 2021, estima-se cerca de 3.000–3.500€.\n\nElétricos têm isenção total — 0€ de ISV! 🎉\n\nQueres que simule um carro específico?',
+  'Que documentos preciso?':'Para importar de um país EU precisas de:\n\n✅ Contrato de compra e venda\n✅ Certificado de Conformidade (CoC)\n✅ Comprovativo de pagamento SEPA\n✅ DAV — Declaração Aduaneira (20 dias)\n✅ Seguro de trânsito temporário\n✅ Inspeção técnica em Portugal\n\nO DRIVO trata de tudo isto por ti.',
+  'BMW 320d compensa?':'Sim, geralmente compensa muito bem. 💪\n\nBMW 320d 2021 — Alemanha:\n🇩🇪 Preço origem: ~28.500€\n🏛️ ISV: ~3.240€\n🚛 Transporte: ~1.100€\n\n✅ Total PT: ~33.375€\nvs. ~42.000€ num stand PT\n\n💰 Poupança: ~8.600€',
+  'Elétrico vs Diesel?':'Depende do orçamento e do carro.\n\n⚡ Elétrico (ex: Tesla Model 3):\n• ISV: 0€ — isenção total\n• Holanda tem imenso stock\n• Poupança vs PT: 8.000–15.000€\n\n⛽ Diesel (ex: BMW 320d):\n• ISV: 2.500–4.000€\n• Mais variedade na Alemanha\n\nPara maximizar poupança → elétrico na Holanda 🇳🇱'
+};
+function sqr(el){
+  var txt=el.textContent;
+  el.closest('.qrs').remove();
+  am(txt,'usr');
+  var d=at();
+  setTimeout(function(){d.remove();am(rsp[txt]||'Diz-me o modelo e ano do carro e calculo tudo para ti.','bot')},1100);
+}
+function sm(){
+  var inp=document.getElementById('ci2'),txt=inp.value.trim();
+  if(!txt)return;inp.value='';
+  am(txt,'usr');
+  var d=at();
+  setTimeout(function(){d.remove();am('Diz-me o modelo, ano e país de origem e calculo o custo real em Portugal. 🚗','bot')},1100);
+}
+function am(text,type){
+  var msgs=document.getElementById('cm'),d=document.createElement('div');
+  d.className='msg '+type;
+  var t=new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  d.innerHTML='<div class="mb">'+text.replace(/\n/g,'<br>')+'</div><div class="mt">'+t+'</div>';
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;
+}
+function at(){
+  var msgs=document.getElementById('cm'),d=document.createElement('div');
+  d.className='msg bot';
+  d.innerHTML='<div class="mb"><div class="typ"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;
+}
+// ── PWA INSTALL (iOS detection)
+function isIOS(){return/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream}
+function isStandalone(){return window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches}
+window.addEventListener('load',function(){
+  if(isIOS()&&!isStandalone()){
+    var shown=sessionStorage.getItem('drivo_ib');
+    if(!shown){setTimeout(function(){document.getElementById('ib').style.display='block';sessionStorage.setItem('drivo_ib','1')},3000)}
+  }
+});
+// ── SERVICE WORKER (offline support)
+if('serviceWorker' in navigator){
+  var sw='data:application/javascript,'+encodeURIComponent(
+    'var C="drivo-v1",A=["./"];'+
+    'self.addEventListener("install",e=>e.waitUntil(caches.open(C).then(c=>c.addAll(A))));'+
+    'self.addEventListener("fetch",e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));'
+  );
+  navigator.serviceWorker.register(sw,{scope:'./'}).catch(function(){});
+}
+// init
+tc();sc();
+<\/script>
+</body>
+</html>
